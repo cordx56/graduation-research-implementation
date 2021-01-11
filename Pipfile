@@ -10,6 +10,7 @@ astunparse = "==1.6.3"
 jupyter = "*"
 networkx = "*"
 matplotlib = "*"
+pygraphviz = "*"
 
 [requires]
 python_version = "3.8"

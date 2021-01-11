@@ -1,6 +1,7 @@
 import networkx as nx
 import ast
 from typing import Optional, Tuple, Any
+from typy import get_type_candidate
 
 class ConstraintGraph:
     def __init__(self, tree=None):
@@ -8,7 +9,7 @@ class ConstraintGraph:
         if tree:
             self.dispatch(tree)
 
-    def dispatch(self, tree) -> Optional[Tuple[str, Any]]:
+    def dispatch(self, tree):
         if isinstance(tree, list):
             for t in tree:
                 self.dispatch(t)
@@ -21,6 +22,16 @@ class ConstraintGraph:
             for e2 in self.g.out_edges(label):
                 self.g.add_edge(e1[0], e2[1])
         self.g.remove_node(label)
+
+
+    def get_types(self, label):
+        types = []
+        for n in nx.ancestors(self.g, label):
+            if n.startswith('Constant_'):
+                types.extend(get_type_candidate({}, self.g.nodes[n]['value']))
+            elif n.startswith('List_'):
+                types.extend(get_type_candidate({}, self.g.nodes[n]['value']))
+        return types
 
 
     def _Module(self, tree):
@@ -55,3 +66,10 @@ class ConstraintGraph:
     def _Constant(self, t: ast.Constant) -> Tuple[str, ast.Constant]:
         label = t.__class__.__name__ + '_' + repr(t.value)
         return label, t
+
+    def _List(self, t: ast.List) -> Tuple[str, ast.List]:
+        label = t.__class__.__name__ + '_' + repr(t)
+        return label, t
+
+    def _Return(self, t: ast.Return):
+        pass
